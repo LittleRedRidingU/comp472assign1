@@ -1,23 +1,23 @@
 import matplotlib.pyplot as plt
+import math
 
-# quick demo
-# row, col = 3, 4
-# graph = [
-#     "🦠", "💊", "🎡", "",
-#     "💊", "", "🦠", "",
-#     "🎡", "🦠", "💊", "💊"
-# ]
+row, col = 3, 4
+graph = [
+    "🦠", "💊", "🎡", "",
+    "💊", "", "🦠", "",
+    "🎡", "🦠", "💊", "💊"
+]
 
 # full demo
-row = int(input("please enter your desired row number: "))
-col = int(input("please enter your desired column number: "))
-print('__________________________________________________')
-print('note: 1 for quarantine, 2 for vaccine, 3 for playground, 0 for empty')
-print('Example: 1 2 3 0 2 0 1 0 3 1 2 2')
-graph = list(map(int, input("please enter the place arrangement list(" + str(row * col) + "): ").split()))
-print('__________________________________________________')
-for i, num in enumerate(graph):
-    graph[i] = ["🦠", "💊", "🎡", ""][num-1]
+# row = int(input("please enter your desired row number: "))
+# col = int(input("please enter your desired column number: "))
+# print('__________________________________________________')
+# print('note: 1 for quarantine, 2 for vaccine, 3 for playground, 0 for empty')
+# print('Example: 1 2 3 0 2 0 1 0 3 1 2 2')
+# graph = list(map(int, input("please enter the place arrangement list(" + str(row * col) + "): ").split()))
+# print('__________________________________________________')
+# for i, num in enumerate(graph):
+#     graph[i] = ["🦠", "💊", "🎡", ""][num-1]
 role = str(input("please enter the role player(c, v, p): "))
 start_place = int(
     input("please enter the start place(an index of list staring from 1 to " + str(row * col) + "): ")) - 1
@@ -32,14 +32,14 @@ def row_level(place):
 
 
 # a list of surrounding points, [left-top, right-top, left-bottom, right-bottom]
-def near_place_list(place):
+def points_near_place(place):
     r_level = row_level(place)
     return [place + r_level, place + r_level + 1, place + r_level + col + 1,
             place + r_level + col + 2]
 
 
 # decision making of the staring point:
-start_point_list = near_place_list(start_place)
+start_point_list = points_near_place(start_place)
 # c: 'right-top', v: 'left-bottom', p: 'should be any surrounding points? or surrounding edges only? confused!'
 if role == 'c':
     print(start_point_list[1])
@@ -49,22 +49,22 @@ if role == 'p':
     print(start_point_list)
 
 
-# define a method for near place checking
-def near_place(p):
+# define a method to check places near a (index of the) place
+def places_near_place(p):
     # a list of surrounding places, [Up, left, right, bottom]
-    near_place_list = [p - col, p - 1, p + 1, p + col]
+    np_list = [p - col, p - 1, p + 1, p + col]
     # check if place out of requirements, replace with ""
-    for index, number in enumerate(near_place_list):
+    for index, number in enumerate(np_list):
         if number > (row * col - 1) or number < 0:
-            near_place_list[index] = ""
+            np_list[index] = ""
     # check if a place is left most or right most, replace with ""
     # left most checking
     if p % col == 0:
-        near_place_list[1] = ""
+        np_list[1] = ""
     # right most checking
     elif p % col == col - 1:
-        near_place_list[2] = ""
-    return near_place_list
+        np_list[2] = ""
+    return np_list
 
 
 def cost(place):
@@ -76,7 +76,7 @@ def cost(place):
 
 def edge_cost(place1, place2):
     if place1 != '' and place2 != '':
-        return (float(cost(graph[place1])) + float(cost(graph[place2])))/2
+        return (float(cost(graph[place1])) + float(cost(graph[place2]))) / 2
     if place1 == '' or place2 == '':
         if place1 != '':
             return cost(graph[place1])
@@ -86,39 +86,15 @@ def edge_cost(place1, place2):
             return ''
 
 
-# cost of edges around point
-def near_point_edges(point):
-    # find places around point
-    point_r_level = int((point - point % (col + 1)) / (col + 1))
-    print(point_r_level)
-    near_point_places = [point - point_r_level - col - 1, point - point_r_level - col, point - point_r_level - 1,
-                         point - point_r_level]
-    if near_point_places[0] < 0 or point % (col + 1) == 0:
-        near_point_places[0] = ""
-    if near_point_places[1] <= 0 or point % (col + 1) == col:
-        near_point_places[1] = ""
-    if point_r_level == row or point % (col + 1) == 0:
-        near_point_places[2] = ""
-    if point_r_level == row or point % (col + 1) == col:
-        near_point_places[3] = ""
-    print(near_point_places)
-    edges = [edge_cost(near_point_places[0], near_point_places[1]),
-             edge_cost(near_point_places[1], near_point_places[3]),
-             edge_cost(near_point_places[3], near_point_places[2]),
-             edge_cost(near_point_places[2], near_point_places[0])]
-    return edges
-
-
-print(near_point_edges(int(input("please enter the index of a point to get surrounding edge costs"))))
-
 # cost of each edge (for entered role)
 # start recording costs of row edges
 # In default just get top edges, if target place is at bottom,
 # save it to another list, and put them back once place list is empty
+# later on this part was decided to serve graphs only.
 cost_r = []
 cost_r_bottom = []
 for i, p in enumerate(graph):
-    neighbors = near_place(i)
+    neighbors = places_near_place(i)
     if neighbors[0] == "":
         cost_top = cost(p)
     else:
@@ -131,9 +107,10 @@ for i, p in enumerate(graph):
         cost_r_bottom.append(cost(p))
 cost_r.extend(cost_r_bottom)
 
+# start recording costs of col edges
 cost_c = []
 for i, p in enumerate(graph):
-    neighbors = near_place(i)
+    neighbors = places_near_place(i)
     if neighbors[1] == "":
         cost_left = cost(p)
     else:
@@ -144,6 +121,80 @@ for i, p in enumerate(graph):
     cost_c.append(cost_left)
     if col_index(i) + 1 == col:
         cost_c.append(cost(p))
+
+
+# decided to make some general method for a single BFS
+# what we need: costs of edges around a point, positions of points around a point
+# for role v: highest cost of each diagonal line around a point, positions of those point
+def point_r_level(point):
+    return int((point - point % (col + 1)) / (col + 1))
+
+
+# return positions of places around a point
+def places_near_point(point):
+    prl = point_r_level(point)
+    return [point - prl - col - 1, point - prl - col, point - prl - 1, point - prl]
+
+
+# return positions of points around a point
+# [left-top, top, right-top, left, right, left-bottom, bottom, right-bottom]
+# just cross: [1,3,4,6]
+# just diagonal: [0,2,5,7]
+def points_near_point(point):
+    return [point - col - 2, point - col - 1, point - col, point - 1, point + 1,
+            point + col, point + col + 1, point + col + 2]
+
+
+# return costs of edges around a point
+# note the cost of edges is in this order [up, right, down, left]
+def near_point_edges(point):
+    pnp = places_near_point(point)
+    prl = point_r_level(point)
+    if pnp[0] < 0 or point % (col + 1) == 0:
+        pnp[0] = ""
+    if pnp[1] <= 0 or point % (col + 1) == col:
+        pnp[1] = ""
+    if prl == row or point % (col + 1) == 0:
+        pnp[2] = ""
+    if prl == row or point % (col + 1) == col:
+        pnp[3] = ""
+    edges = [edge_cost(pnp[0], pnp[1]),
+             edge_cost(pnp[1], pnp[3]),
+             edge_cost(pnp[3], pnp[2]),
+             edge_cost(pnp[2], pnp[0])]
+    return edges
+
+
+# return cost of diagonal line [left-top, right-top, left-bottom, right-bottom
+def diagonal_line(point):
+    pn_point = points_near_point(point)
+    diagonal_list = []
+    # gather the edge data of surrounding points
+    left_point_npe = near_point_edges(pn_point[3])
+    top_point_npe = near_point_edges(pn_point[1])
+    right_point_npe = near_point_edges(pn_point[4])
+    bottom_point_npe = near_point_edges(pn_point[6])
+    # find diagonal costs
+    left_n_top_cost = math.sqrt(left_point_npe[0] ** 2 + left_point_npe[1] ** 2)
+    top_n_left_cost = math.sqrt(top_point_npe[2] ** 2 + top_point_npe[3] ** 2)
+    diagonal_list.append(max(left_n_top_cost, top_n_left_cost))
+    right_n_top_cost = math.sqrt(right_point_npe[0] ** 2 + right_point_npe[3] ** 2)
+    top_n_right_cost = math.sqrt(top_point_npe[2] ** 2 + top_point_npe[1] ** 2)
+    diagonal_list.append(max(right_n_top_cost, top_n_right_cost))
+    left_n_bottom_cost = math.sqrt(left_point_npe[2] ** 2 + left_point_npe[1] ** 2)
+    bottom_n_left_cost = math.sqrt(bottom_point_npe[0] ** 2 + bottom_point_npe[3] ** 2)
+    diagonal_list.append(max(left_n_bottom_cost, bottom_n_left_cost))
+    right_n_bottom_cost = math.sqrt(right_point_npe[2] ** 2 + right_point_npe[3] ** 2)
+    bottom_n_right_cost = math.sqrt(bottom_point_npe[0] ** 2 + bottom_point_npe[1] ** 2)
+    diagonal_list.append(max(right_n_bottom_cost, bottom_n_right_cost))
+    return diagonal_list
+
+
+keyIn = input("please enter the point to get surrounding edge costs: ")
+check = ord(keyIn) - 65
+print("the point index around point " + keyIn + " are " + str(points_near_point(check)))
+print("the cost of crossing edges around point " + keyIn + " are " + str(near_point_edges(check)))
+print("the cost of diagonal line around point " + keyIn + " are " +  str(diagonal_line(check)))
 
 # graph part:
 # 1. grid drawing

@@ -1,4 +1,5 @@
 
+
 # cost of edges around place
 # def near_place_edges(place):
 #     neighbors_list = near_place(place)
