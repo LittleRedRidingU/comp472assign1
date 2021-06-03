@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import math
 
+# oi
+
 row, col = 3, 4
 graph = [
     "🦠", "💊", "🎡", "",
