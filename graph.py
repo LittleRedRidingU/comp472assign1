@@ -129,16 +129,6 @@ for i, p in enumerate(graph):
 def point_r_level(point):
     return int((point - point % (col + 1)) / (col + 1))
 
-def point_c_level(point):
-    return int(point % (col + 1))
-
-def cal_h_role_c(pos, des):
-    return abs(point_r_level(des) - point_r_level(pos)) + abs(point_c_level(des) - point_c_level(pos))
-
-print(point_r_level(7))
-print(point_c_level(7))
-print(cal_h_role_c(4,8))
-
 
 # return positions of places around a point
 def places_near_point(point):
@@ -162,7 +152,7 @@ def near_point_edges(point):
     prl = point_r_level(point)
     if pnp[0] < 0 or point % (col + 1) == 0:
         pnp[0] = ""
-    if pnp[1] < 0 or point % (col + 1) == col:
+    if pnp[1] <= 0 or point % (col + 1) == col:
         pnp[1] = ""
     if prl == row or point % (col + 1) == 0:
         pnp[2] = ""
@@ -174,22 +164,16 @@ def near_point_edges(point):
              edge_cost(pnp[2], pnp[0])]
     return edges
 
-def empty_to_zero(li):
-    for k, item in enumerate(li):
-        if item == '':
-            li[k] = 0
-    return li
 
 # return cost of diagonal line [left-top, right-top, left-bottom, right-bottom
 def diagonal_line(point):
     pn_point = points_near_point(point)
     diagonal_list = []
     # gather the edge data of surrounding points
-    left_point_npe = empty_to_zero(near_point_edges(pn_point[3]))
-    top_point_npe = empty_to_zero(near_point_edges(pn_point[1]))
-    right_point_npe = empty_to_zero(near_point_edges(pn_point[4]))
-    bottom_point_npe = empty_to_zero(near_point_edges(pn_point[6]))
-
+    left_point_npe = near_point_edges(pn_point[3])
+    top_point_npe = near_point_edges(pn_point[1])
+    right_point_npe = near_point_edges(pn_point[4])
+    bottom_point_npe = near_point_edges(pn_point[6])
     # find diagonal costs
     left_n_top_cost = math.sqrt(left_point_npe[0] ** 2 + left_point_npe[1] ** 2)
     top_n_left_cost = math.sqrt(top_point_npe[2] ** 2 + top_point_npe[3] ** 2)
