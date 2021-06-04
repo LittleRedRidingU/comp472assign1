@@ -129,6 +129,7 @@ for i, p in enumerate(graph):
 def point_r_level(point):
     return int((point - point % (col + 1)) / (col + 1))
 
+
 def point_c_level(point):
     return int(point % (col + 1))
 
@@ -169,7 +170,7 @@ def near_point_edges(point):
     prl = point_r_level(point)
     if pnp[0] < 0 or point % (col + 1) == 0:
         pnp[0] = ""
-    if pnp[1] < 0 or point % (col + 1) == col:
+    if pnp[1] <= 0 or point % (col + 1) == col:
         pnp[1] = ""
     if prl == row or point % (col + 1) == 0:
         pnp[2] = ""
@@ -182,11 +183,13 @@ def near_point_edges(point):
     return edges
 
 
+
 def diagonal_costs(li, j, k):
     if li[j] == "" or li[k] == "":
         return ""
     else:
         return math.sqrt(li[j] ** 2 + li[k] ** 2)
+
 
 # return cost of diagonal line [left-top, right-top, left-bottom, right-bottom
 def diagonal_line(point):
@@ -197,7 +200,6 @@ def diagonal_line(point):
     top_point_npe = near_point_edges(pn_point[1])
     right_point_npe = near_point_edges(pn_point[4])
     bottom_point_npe = near_point_edges(pn_point[6])
-
     # find diagonal costs
     left_n_top_cost = diagonal_costs(left_point_npe, 0, 1)
     top_n_left_cost = diagonal_costs(top_point_npe, 2, 3)
