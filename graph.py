@@ -23,6 +23,7 @@ start_place = int(
     input("please enter the start place(an index of list staring from 1 to " + str(row * col) + "): ")) - 1
 
 
+# place is from 0 to 11
 def col_index(place):
     return place % col
 
@@ -64,6 +65,12 @@ def places_near_place(p):
     # right most checking
     elif p % col == col - 1:
         np_list[2] = ""
+    # top most checking
+    elif 0 <= p < col:
+        np_list[0] = ""
+    # bottom boundary checking
+    elif ((row * col - 1) - col) < p < (row * col - 1):
+        np_list[3] = ""
     return np_list
 
 
@@ -148,11 +155,13 @@ def points_near_point(point):
 # return costs of edges around a point
 # note the cost of edges is in this order [up, right, down, left]
 def near_point_edges(point):
+    if point < 0:
+        return ["", "", "", ""]
     pnp = places_near_point(point)
     prl = point_r_level(point)
     if pnp[0] < 0 or point % (col + 1) == 0:
         pnp[0] = ""
-    if pnp[1] <= 0 or point % (col + 1) == col:
+    if pnp[1] < 0 or point % (col + 1) == col:
         pnp[1] = ""
     if prl == row or point % (col + 1) == 0:
         pnp[2] = ""
@@ -165,6 +174,13 @@ def near_point_edges(point):
     return edges
 
 
+def diagonal_costs(li, j, k):
+    if li[j] == "" or li[k] == "":
+        return ""
+    else:
+        return math.sqrt(li[j] ** 2 + li[k] ** 2)
+
+
 # return cost of diagonal line [left-top, right-top, left-bottom, right-bottom
 def diagonal_line(point):
     pn_point = points_near_point(point)
@@ -175,26 +191,27 @@ def diagonal_line(point):
     right_point_npe = near_point_edges(pn_point[4])
     bottom_point_npe = near_point_edges(pn_point[6])
     # find diagonal costs
-    left_n_top_cost = math.sqrt(left_point_npe[0] ** 2 + left_point_npe[1] ** 2)
-    top_n_left_cost = math.sqrt(top_point_npe[2] ** 2 + top_point_npe[3] ** 2)
+    left_n_top_cost = diagonal_costs(left_point_npe, 0, 1)
+    top_n_left_cost = diagonal_costs(top_point_npe, 2, 3)
     diagonal_list.append(max(left_n_top_cost, top_n_left_cost))
-    right_n_top_cost = math.sqrt(right_point_npe[0] ** 2 + right_point_npe[3] ** 2)
-    top_n_right_cost = math.sqrt(top_point_npe[2] ** 2 + top_point_npe[1] ** 2)
+    right_n_top_cost = diagonal_costs(right_point_npe, 0, 3)
+    top_n_right_cost = diagonal_costs(top_point_npe, 2, 1)
     diagonal_list.append(max(right_n_top_cost, top_n_right_cost))
-    left_n_bottom_cost = math.sqrt(left_point_npe[2] ** 2 + left_point_npe[1] ** 2)
-    bottom_n_left_cost = math.sqrt(bottom_point_npe[0] ** 2 + bottom_point_npe[3] ** 2)
+    left_n_bottom_cost = diagonal_costs(left_point_npe, 2, 1)
+    bottom_n_left_cost = diagonal_costs(bottom_point_npe, 0, 3)
     diagonal_list.append(max(left_n_bottom_cost, bottom_n_left_cost))
-    right_n_bottom_cost = math.sqrt(right_point_npe[2] ** 2 + right_point_npe[3] ** 2)
-    bottom_n_right_cost = math.sqrt(bottom_point_npe[0] ** 2 + bottom_point_npe[1] ** 2)
+    right_n_bottom_cost = diagonal_costs(right_point_npe, 2, 3)
+    bottom_n_right_cost = diagonal_costs(bottom_point_npe, 0, 1)
     diagonal_list.append(max(right_n_bottom_cost, bottom_n_right_cost))
     return diagonal_list
 
 
 keyIn = input("please enter the point to get surrounding edge costs: ")
+# input c,check is
 check = ord(keyIn) - 65
 print("the point index around point " + keyIn + " are " + str(points_near_point(check)))
 print("the cost of crossing edges around point " + keyIn + " are " + str(near_point_edges(check)))
-print("the cost of diagonal line around point " + keyIn + " are " +  str(diagonal_line(check)))
+print("the cost of diagonal line around point " + keyIn + " are " + str(diagonal_line(check)))
 
 # graph part:
 # 1. grid drawing
