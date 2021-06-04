@@ -9,6 +9,7 @@ graph = [
 ]
 
 # full demo
+# this is for testing
 # row = int(input("please enter your desired row number: "))
 # col = int(input("please enter your desired column number: "))
 # print('__________________________________________________')
