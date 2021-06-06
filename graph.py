@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import math
-import Astar
 
 row, col = 3, 4
 # graph = [
@@ -25,9 +24,9 @@ graph = [
 # print('__________________________________________________')
 # for i, num in enumerate(graph):
 #     graph[i] = ["🦠", "💊", "🎡", ""][num-1]
-role = str(input("please enter the role player(c, v, p): "))
+role = str(input("Please enter the role player(c, v, p): "))
 start_place = int(
-    input("please enter the start place(an index of list staring from 1 to " + str(row * col) + "): ")) - 1
+    input("Please enter the start place(an index of list staring from 1 to " + str(row * col) + "): ")) - 1
 
 
 def col_index(place):
@@ -61,19 +60,19 @@ def get_starting_point():
 
 
 # define a method to check places near a (index of the) place
-def places_near_place(p):
+def places_near_place(place):
     # a list of surrounding places, [Up, left, right, bottom]
-    np_list = [p - col, p - 1, p + 1, p + col]
+    np_list = [place - col, place - 1, place + 1, place + col]
     # check if place out of requirements, replace with ""
     for index, number in enumerate(np_list):
         if number > (row * col - 1) or number < 0:
             np_list[index] = ""
     # check if a place is left most or right most, replace with ""
     # left most checking
-    if p % col == 0:
+    if place % col == 0:
         np_list[1] = ""
     # right most checking
-    elif p % col == col - 1:
+    elif place % col == col - 1:
         np_list[2] = ""
     return np_list
 
@@ -149,12 +148,6 @@ def cal_h_role_c(pos, des):
     return abs(point_r_level(des) - point_r_level(pos)) + abs(point_c_level(des) - point_c_level(pos))
 
 
-# For testing
-print(point_r_level(7))
-print(point_c_level(7))
-print(cal_h_role_c(4, 8))
-
-
 # return positions of places around a point
 def places_near_point(point):
     prl = point_r_level(point)
@@ -207,11 +200,6 @@ def points_near_point_c(point):
     return li
 
 
-print(points_near_point_c(1))
-print(near_point_edges(1))
-print("CCCCCCCCCCCCCCCCCCC")
-
-
 def diagonal_costs(li, j, k):
     if li[j] == "" or li[k] == "":
         return ""
@@ -252,19 +240,12 @@ def get_node_index(point):
 # estimate cost from starting point to goal point
 def heuristic_role_c(s_point, e_point):
     x0, y0 = get_node_index(s_point)
-    print("*******************************************")
-    print("x0 is the index of starting point %d " % x0)
-    print("y0 is the index of starting point %d " % y0)
     x1, y1 = get_node_index(e_point)
-    print("x1 is the index of starting point %d " % x1)
-    print("y1 is the index of starting point %d " % y1)
-    print("*******************************************")
+    print("\u0020||Start point (" + str(x0) + ", " + str(y0)+"), "+"end point (" + str(x1) + ", " + str(y1)+")")
     d_x = round(float(abs(x1 - x0) * 0.2), 1)
     d_y = round(float(abs(y1 - y0) * 0.1), 1)
     return d_x + d_y
 
-
-print(heuristic_role_c(0, 13))
 
 # [up, right, down, left]
 g_cost_n = []
@@ -273,11 +254,10 @@ close_list_c = []
 
 
 def move_node_c(curr_point, goal_point):
+    # if goal point is reached, return current point
     if curr_point == goal_point:
         return curr_point
     x0, y0 = get_node_index(curr_point)
-    x1, y1 = get_node_index(goal_point)
-    # [up, right, down, left]
     child = points_near_point_c(curr_point)
 
     for ch in child:
@@ -292,53 +272,40 @@ def move_node_c(curr_point, goal_point):
     close_list_c.append(curr_point)
 
     gn_list = near_point_edges(curr_point)
-    #??
-    for i in range(4):
-        if open_list_c[i] == '':
-            gn_list[i] = ''
+    for index in range(4):
+        if open_list_c[index] == '':
+            gn_list[index] = ''
     g_total = 0
     if len(g_cost_n) == 0:
         g_total = 0
     elif len(g_cost_n) == 1:
         g_total = g_cost_n[0]
     else:
-        for i in range(len(g_cost_n)):
-            g_total = g_total + g_cost_n[i]
+        for co in range(len(g_cost_n)):
+            g_total = g_total + g_cost_n[co]
 
-    if gn_list[0] != '':
-        up = gn_list[0] + heuristic_role_c(child[0], goal_point)
-    else:
-        up = 100000
-    if gn_list[1] != '':
-        right = gn_list[1] + heuristic_role_c(child[1], goal_point)
-    else:
-        right = 100000
-    if gn_list[2] != '':
-        down = gn_list[2] + heuristic_role_c(child[2], goal_point)
-    else:
-        down = 100000
-    if gn_list[3] != '':
-        left = gn_list[3] + heuristic_role_c(child[3], goal_point)
-    else:
-        left = 100000
-    print("4 ponts up,rith,down,left")
-    print(up)
-    print(right)
-    print(down)
-    print(left)
+    # A* Cost of edges: [up, right, down, left]
+    print("Comparing A* edge cost around current point")
+    e_cost = []
+    for index in range(4):
+        if gn_list[index] != '':
+            e_cost.append(float(gn_list[index]) + heuristic_role_c(int(child[index]), goal_point))
+        else:
+            print("\u0020||Start point out of bound")
+            e_cost.append(100000)
+    print("A* cost of edges:"+str(e_cost))
+    min_cost = min(e_cost)
 
-    print("4 ponts end")
-    min_cost = min(up, right, down, left)
-    if min_cost == up:
+    if min_cost == e_cost[0]:
         y0 = y0 - 1
         g_cost_n.append(gn_list[0] + g_total)
-    elif min_cost == right:
+    elif min_cost == e_cost[1]:
         x0 = x0 + 1
         g_cost_n.append(gn_list[1] + g_total)
-    elif min_cost == down:
+    elif min_cost == e_cost[2]:
         y0 = y0 + 1
         g_cost_n.append(gn_list[2] + g_total)
-    elif min_cost == left:
+    elif min_cost == e_cost[3]:
         x0 = x0 - 1
         g_cost_n.append(gn_list[3] + g_total)
 
@@ -348,33 +315,25 @@ def move_node_c(curr_point, goal_point):
 
 
 def A_star_c(s_point, e_point):
-    # place_index = places_near_point(s_point)
-    a = get_node_index(s_point)
-    print(a)
-    print("The current point is %d" % s_point)
-
+    print("The current point is " + chr(s_point+65)+"("+str(s_point)+")")
     flag = True
     while flag:
         next_point = move_node_c(s_point, e_point)
-        print("The next point is %d" % next_point)
-
+        print("The next point is " + chr(next_point+65)+"("+str(next_point)+")")
         place_index = places_near_point(next_point)
-        print('nearby places [%s]' % ', '.join(map(str, place_index)))
 
         for x in range(len(place_index)):
             if 0 <= place_index[x] < col * row:
-
                 if graph[place_index[x]] == "🦠":
-                    print("You already the goal state")
+                    print("The goal state reached")
                     flag = False
                     break
                 else:
-                    print("we will keep searching")
-
+                    print("keep searching>>>>>>>>>>>>>")
                     s_point = move_node_c(next_point, e_point)
-                    print("The another&& next point is %d" % s_point)
+                    print("The next point is " + chr(s_point+65)+"("+str(s_point)+")")
                     break
-    print("find place finally")
+    print("<----Place found---->")
     return
 
 
@@ -389,32 +348,21 @@ def cost_role_p_inside(place):
     return edge_cost_near_p
 
 
-# # point could be A,B,C,D etc...but put in order of left_top, right_top, left_down, right_down
-# def get_grid_index(point_a, point_b, point_c, point_d):
-#     left_top_point = ord(point_a)
-#     right_top_point = ord(point_b)
-#     left_down_point = ord(point_c)
-#     right_down_point = ord(point_d)
-#     if ( abs(left_top_point - right_top_point)!=1 or abs(left_down_point-right_down_point)!=1 )
-
-
-keyIn = input("please enter the point to get surrounding edge costs: ")
+keyIn = input("Please enter the point to get surrounding edge costs: ")
 check = ord(keyIn) - 65
 
-print("the point index around point " + keyIn + " are " + str(points_near_point(check)))
-print("the cost of crossing edges around point " + keyIn + " are " + str(near_point_edges(check)))
-# print("the cost of diagonal line around point " + keyIn + " are " + str(diagonal_line(check)))
+print("The point index around point " + keyIn + " are " + str(points_near_point(check)))
+print("The cost of crossing edges around point " + keyIn + " are " + str(near_point_edges(check)))
+# print("The cost of diagonal line around point " + keyIn + " are " + str(diagonal_line(check)))
+
+
 start_p = get_starting_point()
-end_point = ord(input("please insert end point:")) - 65
-
-print(end_point)
+end_p = ord(input("Please insert end point:")) - 65
+print("Your starting point is " + chr(start_p + 65) + "(index:" + str(start_p) + ") "
+      "and your ending point is " + chr(end_p + 65) + "(index:" + str(end_p) + ") ")
 print("********************")
-print(start_p)
-print("********************")
-
-A_star_c(start_p, end_point)
-
-print("bbb********************")
+A_star_c(start_p, end_p)
+print("----end of program----")
 
 # graph part:
 # 1. grid drawing
