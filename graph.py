@@ -264,6 +264,8 @@ def heuristic_role_c(s_point, e_point):
     return d_x + d_y
 
 
+print(heuristic_role_c(0, 13))
+
 # [up, right, down, left]
 g_cost_n = []
 open_list_c = []
@@ -271,18 +273,29 @@ close_list_c = []
 
 
 def move_node_c(curr_point, goal_point):
+    if curr_point == goal_point:
+        return curr_point
     x0, y0 = get_node_index(curr_point)
     x1, y1 = get_node_index(goal_point)
     # [up, right, down, left]
     child = points_near_point_c(curr_point)
 
-    open_list_c.extend(child)
-    for i in range(len(open_list_c)):
-        if open_list_c[i] == curr_point:
-            open_list_c[i] = ''
+    for ch in child:
+        if ch not in close_list_c:
+            open_list_c.append(ch)
+        elif ch in close_list_c:
+            open_list_c.append('')
+
+    for li_i in range(len(open_list_c)):
+        if open_list_c[li_i] == curr_point:
+            open_list_c[li_i] = ''
     close_list_c.append(curr_point)
 
     gn_list = near_point_edges(curr_point)
+    #??
+    for i in range(4):
+        if open_list_c[i] == '':
+            gn_list[i] = ''
     g_total = 0
     if len(g_cost_n) == 0:
         g_total = 0
@@ -329,40 +342,37 @@ def move_node_c(curr_point, goal_point):
         x0 = x0 - 1
         g_cost_n.append(gn_list[3] + g_total)
 
+    open_list_c.clear()
     next_point = (y0 * (col + 1) + x0)
     return next_point
 
 
-def A_star_c(start_point, end_point):
-    place_index = places_near_point(start_point)
-    a = get_node_index(start_point)
+def A_star_c(s_point, e_point):
+    # place_index = places_near_point(s_point)
+    a = get_node_index(s_point)
     print(a)
-    print("The current point is %d" % start_point)
+    print("The current point is %d" % s_point)
 
     flag = True
     while flag:
-        print("sssssssss")
-        print(get_node_index(start_point))
-        print("nNNNNNN")
-
-        next_point = move_node_c(start_point, end_point)
-
+        next_point = move_node_c(s_point, e_point)
         print("The next point is %d" % next_point)
 
-        print(places_near_point(next_point))
+        place_index = places_near_point(next_point)
+        print('nearby places [%s]' % ', '.join(map(str, place_index)))
 
-        for i in range(len(place_index)):
-            if place_index[i] >= 0 and place_index[i] < col * row:
+        for x in range(len(place_index)):
+            if 0 <= place_index[x] < col * row:
 
-                if graph[place_index[i]] == "🦠":
+                if graph[place_index[x]] == "🦠":
                     print("You already the goal state")
                     flag = False
                     break
                 else:
                     print("we will keep searching")
 
-                    start_point = move_node_c(next_point, end_point)
-                    print("The another&& next point is %d" % start_point)
+                    s_point = move_node_c(next_point, e_point)
+                    print("The another&& next point is %d" % s_point)
                     break
     print("find place finally")
     return
