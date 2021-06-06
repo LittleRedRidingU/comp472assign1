@@ -238,13 +238,27 @@ def get_node_index(point):
 
 
 # estimate cost from starting point to goal point
+# manhattan distance
 def heuristic_role_c(s_point, e_point):
     x0, y0 = get_node_index(s_point)
     x1, y1 = get_node_index(e_point)
-    print("\u0020||Start point (" + str(x0) + ", " + str(y0)+"), "+"end point (" + str(x1) + ", " + str(y1)+")")
+    print("\u0020||Start point (" + str(x0) + ", " + str(y0) + "), " + "end point (" + str(x1) + ", " + str(y1) + ")")
     d_x = round(float(abs(x1 - x0) * 0.2), 1)
     d_y = round(float(abs(y1 - y0) * 0.1), 1)
     return d_x + d_y
+
+
+# Diagonal Distance
+def heuristic_role_v(s_point, e_point):
+    x0, y0 = get_node_index(s_point)
+    x1, y1 = get_node_index(e_point)
+    print("\u0020||Start point (" + str(x0) + ", " + str(y0) + "), " + "end point (" + str(x1) + ", " + str(y1) + ")")
+    d_x = abs(x1 - x0)
+    d_y = abs(y1 - y0)
+    d_min = min(d_x, d_y)
+    diagonal_distance = math.sqrt(0.2 ** 2 + 0.1 ** 2)
+    D = 0.2 if d_x < d_y else 0.1
+    return round(float((d_x * 0.2 + d_y * 0.1) + diagonal_distance * d_min - 2 * D * d_min), 2)
 
 
 # [up, right, down, left]
@@ -293,7 +307,7 @@ def move_node_c(curr_point, goal_point):
         else:
             print("\u0020||Start point out of bound")
             e_cost.append(100000)
-    print("A* cost of edges:"+str(e_cost))
+    print("A* cost of edges:" + str(e_cost))
     min_cost = min(e_cost)
 
     if min_cost == e_cost[0]:
@@ -315,11 +329,11 @@ def move_node_c(curr_point, goal_point):
 
 
 def A_star_c(s_point, e_point):
-    print("The current point is " + chr(s_point+65)+"("+str(s_point)+")")
+    print("The current point is " + chr(s_point + 65) + "(" + str(s_point) + ")")
     flag = True
     while flag:
         next_point = move_node_c(s_point, e_point)
-        print("The next point is " + chr(next_point+65)+"("+str(next_point)+")")
+        print("The next point is " + chr(next_point + 65) + "(" + str(next_point) + ")")
         place_index = places_near_point(next_point)
 
         for x in range(len(place_index)):
@@ -331,7 +345,7 @@ def A_star_c(s_point, e_point):
                 else:
                     print("keep searching>>>>>>>>>>>>>")
                     s_point = move_node_c(next_point, e_point)
-                    print("The next point is " + chr(s_point+65)+"("+str(s_point)+")")
+                    print("The next point is " + chr(s_point + 65) + "(" + str(s_point) + ")")
                     break
     print("<----Place found---->")
     return
@@ -359,7 +373,8 @@ print("The cost of crossing edges around point " + keyIn + " are " + str(near_po
 start_p = get_starting_point()
 end_p = ord(input("Please insert end point:")) - 65
 print("Your starting point is " + chr(start_p + 65) + "(index:" + str(start_p) + ") "
-      "and your ending point is " + chr(end_p + 65) + "(index:" + str(end_p) + ") ")
+                                                                                 "and your ending point is " + chr(
+    end_p + 65) + "(index:" + str(end_p) + ") ")
 print("********************")
 A_star_c(start_p, end_p)
 print("----end of program----")
