@@ -264,14 +264,18 @@ def get_node_index(point):
 # estimate cost from starting point to goal point
 def heuristic_role_c(start_point, end_point):
     x0, y0 = get_node_index(start_point)
-    print("x %d" % x0)
-    print(y0)
+    print("*******************************************")
+    print("x0 is the index of starting point %d " % x0)
+    print("y0 is the index of starting point %d " % y0)
     x1, y1 = get_node_index(end_point)
-    print(x1)
-    print(y1)
+
+    print("x1 is the index of starting point %d " % x1)
+    print("y1 is the index of starting point %d " % y1)
+    print("*******************************************")
     d_x = round(float(abs(x1 - x0) * 0.2), 1)
     d_y = round(float(abs(y1 - y0) * 0.1), 1)
     return d_x + d_y
+
 
 
 # [up, right, down, left]
@@ -294,9 +298,9 @@ def move_node_c(curr_point, goal_point ):
 
     gn_list = near_point_edges(curr_point)
     g_total = 0
-    if len(g_cost_n)==0:
-        g_total=0
-    elif len(g_cost_n)==1:
+    if len(g_cost_n) == 0:
+        g_total = 0
+    elif len(g_cost_n) == 1:
         g_total = g_cost_n[0]
     else:
         for i in range(len(g_cost_n)):
