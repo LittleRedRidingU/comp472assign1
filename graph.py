@@ -503,6 +503,13 @@ def A_star_c(s_point):
                     s_point = next_point
                     break
     print("<----Place found---->")
+    print("The path is: ")
+    for i in path:
+        letter_point = chr(i + 65)
+        if i == path[-1]:
+            print(letter_point, end=" ")
+        else:
+            print(letter_point, "->", end=" ")
     return
 
 
@@ -526,13 +533,6 @@ def A_star_v(s_point):
                     s_point = next_point
                     break
     print("<----Place found---->")
-    print("The path is: ")
-    for i in path:
-        letter_point = chr(i + 65)
-        if i == path[-1]:
-            print(letter_point, end=" ")
-        else:
-            print(letter_point, "->", end=" ")
     return
 
 
