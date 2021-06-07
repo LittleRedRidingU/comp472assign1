@@ -394,10 +394,12 @@ def move_node_c(curr_point):
 
 
 def A_star_c(s_point):
+    path = []
     print("The current point is " + chr(s_point + 65) + "(" + str(s_point) + ")")
     flag = True
     while flag:
         next_point = move_node_c(s_point)
+        path.append(next_point)
         print("The next point is " + chr(next_point + 65) + "(" + str(next_point) + ")")
         place_index = places_near_point(next_point)
 
@@ -412,6 +414,13 @@ def A_star_c(s_point):
                     s_point = next_point
                     break
     print("<----Place found---->")
+    print("The path is: ")
+    for i in path:
+        letter_point = chr(i + 65)
+        if i == path[-1]:
+            print(letter_point, end=" ")
+        else:
+            print(letter_point, "->", end=" ")
     return
 
 
@@ -455,7 +464,7 @@ print("********************")
 #     A_star_v(start_p)
 # elif role == 'p':
 #     A_star_p(start_p)
-print("----end of program----")
+print("\n----end of program----")
 
 # graph part:
 # 1. grid drawing
