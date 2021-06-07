@@ -1,29 +1,29 @@
 import matplotlib.pyplot as plt
 import math
 
-row, col = 3, 4
+# row, col = 3, 4
 # graph = [
 #     "🦠", "💊", "🎡", "",
 #     "💊", "", "🦠", "",
 #     "🎡", "🦠", "💊", "💊"
 # ]
 
-graph = [
-    "🦠", "💊", "🎡", "",
-    "💊", "", "", "",
-    "🎡", "", "💊", "💊"
-]
+# graph = [
+#     "🦠", "💊", "🎡", "",
+#     "💊", "", "", "",
+#     "🎡", "", "💊", "💊"
+# ]
 
 # full demo
-# row = int(input("please enter your desired row number: "))
-# col = int(input("please enter your desired column number: "))
-# print('__________________________________________________')
-# print('note: 1 for quarantine, 2 for vaccine, 3 for playground, 0 for empty')
-# print('Example: 1 2 3 0 2 0 1 0 3 1 2 2')
-# graph = list(map(int, input("please enter the place arrangement list(" + str(row * col) + "): ").split()))
-# print('__________________________________________________')
-# for i, num in enumerate(graph):
-#     graph[i] = ["🦠", "💊", "🎡", ""][num-1]
+row = int(input("please enter your desired row number: "))
+col = int(input("please enter your desired column number: "))
+print('__________________________________________________')
+print('note: 1 for quarantine, 2 for vaccine, 3 for playground, 0 for empty')
+print('Example: 1 2 3 0 2 0 1 0 3 1 2 2')
+graph = list(map(int, input("please enter the place arrangement list(" + str(row * col) + "): ").split()))
+print('__________________________________________________')
+for i, num in enumerate(graph):
+    graph[i] = ["🦠", "💊", "🎡", ""][num - 1]
 role = str(input("Please enter the role player(c, v, p): "))
 start_place = int(
     input("Please enter the start place(an index of list staring from 1 to " + str(row * col) + "): ")) - 1
@@ -256,7 +256,8 @@ def heuristic_role_c(s_point):
     H = []
     for index, e in enumerate(points):
         x1, y1 = get_node_index(e)
-        print("\u0020||Start point (" + str(x0) + ", " + str(y0) + "), " + "end point (" + str(x1) + ", " + str(y1) + ")")
+        print(
+            "\u0020||Start point (" + str(x0) + ", " + str(y0) + "), " + "end point (" + str(x1) + ", " + str(y1) + ")")
         d_x = round(float(abs(x1 - x0) * 0.2), 1)
         d_y = round(float(abs(y1 - y0) * 0.1), 1)
         H.append(d_x + d_y)
@@ -270,7 +271,8 @@ def heuristic_role_v(s_point):
     H = []
     for index, e in enumerate(points):
         x1, y1 = get_node_index(e)
-        print("\u0020||Start point (" + str(x0) + ", " + str(y0) + "), " + "end point (" + str(x1) + ", " + str(y1) + ")")
+        print(
+            "\u0020||Start point (" + str(x0) + ", " + str(y0) + "), " + "end point (" + str(x1) + ", " + str(y1) + ")")
         d_x = abs(x1 - x0)
         d_y = abs(y1 - y0)
         d_min = min(d_x, d_y)
@@ -279,6 +281,51 @@ def heuristic_role_v(s_point):
         H.append(round(float((d_x * 0.2 + d_y * 0.1) + diagonal_distance * d_min - 2 * D * d_min), 2))
     return min(H)
 
+
+# modified manhattan distance
+# we use it because the distance other than the start place is the same as manhattan distance
+# if user pick a point pick manhattan, if pick an edge, use heuristic_role_p_edge
+def heuristic_role_p_place(s_place):
+    near_points = points_near_place(s_place)
+    H = []
+    for index in range(4):
+        x0, y0 = get_node_index(near_points[index])
+        points = find_end_points_by_place("🎡")
+        # the distance from the center to the corner:
+        # This value is just right for the furthest and the nearest distance moved within the grid
+        delta = math.sqrt((0.2 / 2) ** 2 + (0.1 / 2) ** 2)
+        for e in points:
+            x1, y1 = get_node_index(e)
+            print(
+                "\u0020||Start point (" + str(x0) + ", " + str(y0) + "), " + "end point (" + str(x1) + ", " + str(y1) + ")")
+            d_x = round(float(abs(x1 - x0) * 0.2), 1)
+            d_y = round(float(abs(y1 - y0) * 0.1), 1)
+            if d_x + d_y == 0:
+                H.append(d_x + d_y)
+            else:
+                H.append(d_x + d_y + delta)
+    return min(H)
+
+
+def heuristic_role_p_edge(point1, point2):
+    near_points = [point1, point2]
+    H = []
+    for index in range(2):
+        x0, y0 = get_node_index(near_points[index])
+        points = find_end_points_by_place("🎡")
+        # the average distance from the center to the corner:
+        delta = (0.1+0.2)/2
+        for e in points:
+            x1, y1 = get_node_index(e)
+            print(
+                "\u0020||Start point (" + str(x0) + ", " + str(y0) + "), " + "end point (" + str(x1) + ", " + str(y1) + ")")
+            d_x = round(float(abs(x1 - x0) * 0.2), 1)
+            d_y = round(float(abs(y1 - y0) * 0.1), 1)
+            if d_x + d_y == 0:
+                H.append(d_x + d_y)
+            else:
+                H.append(d_x + d_y + delta)
+    return min(H)
 
 # [up, right, down, left]
 g_cost_n = []
@@ -379,11 +426,22 @@ def cost_role_p_inside(place):
     return edge_cost_near_p
 
 
-keyIn = input("Please enter the point to get surrounding edge costs: ")
-check = ord(keyIn) - 65
+def calling_for_P(index_of_place, point1, point2):
+    if index_of_place == "" and point1 != "" and point2 != "":
+        "edge"
+    if index_of_place == "" and point1 != "" and point2 == "":
+        "point1"
+    if index_of_place == "" and point1 == "" and point2 != "":
+        "point2"
+    if index_of_place != "" and point1 == "" and point2 == "":
+        "place"
 
-print("The point index around point " + keyIn + " are " + str(points_near_point(check)))
-print("The cost of crossing edges around point " + keyIn + " are " + str(near_point_edges(check)))
+
+# keyIn = input("Please enter the point to get surrounding edge costs: ")
+# check = ord(keyIn) - 65
+#
+# print("The point index around point " + keyIn + " are " + str(points_near_point(check)))
+# print("The cost of crossing edges around point " + keyIn + " are " + str(near_point_edges(check)))
 # print("The cost of diagonal line around point " + keyIn + " are " + str(diagonal_line(check)))
 
 
@@ -391,7 +449,12 @@ start_p = get_starting_point()
 # end_p = ord(input("Please insert end point:")) - 65
 print("Your starting point is " + chr(start_p + 65) + "(index:" + str(start_p) + ") ")
 print("********************")
-A_star_c(start_p)
+# if role == 'c':
+#     A_star_c(start_p)
+# elif role == 'v':
+#     A_star_v(start_p)
+# elif role == 'p':
+#     A_star_p(start_p)
 print("----end of program----")
 
 # graph part:
