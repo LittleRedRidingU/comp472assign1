@@ -177,7 +177,7 @@ def points_near_point(point):
 # return costs of edges around a point
 # note the cost of edges is in this order [up, right, down, left]
 def near_point_edges(point):
-    if point < 0 or point=='':
+    if point < 0:
         return ["", "", "", ""]
     pnp = places_near_point(point)
     prl = point_r_level(point)
@@ -264,7 +264,8 @@ def heuristic_role_c(s_point):
     H = []
     for index, e in enumerate(points):
         x1, y1 = get_node_index(e)
-        print("\u0020||Start point (" + str(x0) + ", " + str(y0) + "), " + "end point (" + str(x1) + ", " + str(y1) + ")")
+        print(
+            "\u0020||Start point (" + str(x0) + ", " + str(y0) + "), " + "end point (" + str(x1) + ", " + str(y1) + ")")
         d_x = round(float(abs(x1 - x0) * 0.2), 1)
         d_y = round(float(abs(y1 - y0) * 0.1), 1)
         H.append(d_x + d_y)
@@ -482,10 +483,12 @@ def move_node_v(curr_point):
 
 
 def A_star_c(s_point):
+    path = []
     print("The current point is " + chr(s_point + 65) + "(" + str(s_point) + ")")
     flag = True
     while flag:
         next_point = move_node_c(s_point)
+        path.append(next_point)
         print("The next point is " + chr(next_point + 65) + "(" + str(next_point) + ")")
         place_index = places_near_point(next_point)
 
@@ -495,17 +498,13 @@ def A_star_c(s_point):
                     print("The goal state reached")
                     flag = False
                     break
-                elif graph[place_index[x]] == "💊":
-                    print("The goal state reached")
-                    flag = False
-                    break
-
                 else:
                     print("keep searching>>>>>>>>>>>>>")
                     s_point = next_point
                     break
     print("<----Place found---->")
     return
+
 
 def A_star_v(s_point):
     print("The current point is " + chr(s_point + 65) + "(" + str(s_point) + ")")
@@ -527,6 +526,13 @@ def A_star_v(s_point):
                     s_point = next_point
                     break
     print("<----Place found---->")
+    print("The path is: ")
+    for i in path:
+        letter_point = chr(i + 65)
+        if i == path[-1]:
+            print(letter_point, end=" ")
+        else:
+            print(letter_point, "->", end=" ")
     return
 
 
