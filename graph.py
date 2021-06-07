@@ -1,5 +1,12 @@
+# -------------------------------------------------------
+# Assignment 1
+# Written by Lingli Lin_40065176, Yaqi Kang_40061670, Zisen Ling_40020293
+# For COMP 472 Section AK-X, AI-X AL-X – Summer 2021
+# --------------------------------------------------------
 import matplotlib.pyplot as plt
 import math
+
+
 
 # row, col = 3, 4
 # graph = [
@@ -170,7 +177,7 @@ def points_near_point(point):
 # return costs of edges around a point
 # note the cost of edges is in this order [up, right, down, left]
 def near_point_edges(point):
-    if point < 0:
+    if point < 0 or point=='':
         return ["", "", "", ""]
     pnp = places_near_point(point)
     prl = point_r_level(point)
@@ -202,7 +209,8 @@ def points_near_point_c(point):
 
 def diagonal_costs(li, j, k):
     if li[j] == "" or li[k] == "":
-        return ""
+        #return ""
+        return 10000
     else:
         return math.sqrt(li[j] ** 2 + li[k] ** 2)
 
@@ -256,8 +264,7 @@ def heuristic_role_c(s_point):
     H = []
     for index, e in enumerate(points):
         x1, y1 = get_node_index(e)
-        print(
-            "\u0020||Start point (" + str(x0) + ", " + str(y0) + "), " + "end point (" + str(x1) + ", " + str(y1) + ")")
+        print("\u0020||Start point (" + str(x0) + ", " + str(y0) + "), " + "end point (" + str(x1) + ", " + str(y1) + ")")
         d_x = round(float(abs(x1 - x0) * 0.2), 1)
         d_y = round(float(abs(y1 - y0) * 0.1), 1)
         H.append(d_x + d_y)
@@ -271,8 +278,7 @@ def heuristic_role_v(s_point):
     H = []
     for index, e in enumerate(points):
         x1, y1 = get_node_index(e)
-        print(
-            "\u0020||Start point (" + str(x0) + ", " + str(y0) + "), " + "end point (" + str(x1) + ", " + str(y1) + ")")
+        print("\u0020||Start point (" + str(x0) + ", " + str(y0) + "), " + "end point (" + str(x1) + ", " + str(y1) + ")")
         d_x = abs(x1 - x0)
         d_y = abs(y1 - y0)
         d_min = min(d_x, d_y)
@@ -392,6 +398,88 @@ def move_node_c(curr_point):
     next_point = (y0 * (col + 1) + x0)
     return next_point
 
+g_cost_n_v = []
+open_list_v = []
+close_list_v = []
+def move_node_v(curr_point):
+    x0, y0 = get_node_index(curr_point)
+    # indices of four points near curr_point
+    # children = points_near_point_c(curr_point)
+    children= points_near_point(curr_point)
+
+    for ch in children:
+        if ch not in close_list_v:
+            open_list_v.append(ch)
+        elif ch in close_list_v:
+            open_list_v.append('')
+
+    for li_i in range(len(open_list_v)):
+        if open_list_v[li_i] == curr_point:
+            open_list_v[li_i] = ''
+    close_list_v.append(curr_point)
+
+    gn_list = near_point_edges(curr_point)
+
+    # add processing of diagonal lines
+    gn_list.extend( diagonal_line(curr_point))
+
+    for index in range(8):
+        if open_list_v[index] == '':
+            gn_list[index] = ''
+    g_total = 0
+    if len(g_cost_n_v) == 0:
+        g_total = 0
+    elif len(g_cost_n_v) == 1:
+        g_total = g_cost_n_v[0]
+    else:
+        for co in range(len(g_cost_n_v)):
+            g_total = g_total + g_cost_n_v[co]
+
+    # A* Cost of edges: [up, right, down, left]
+    print("Comparing A* edge cost around current point")
+    e_cost = []
+    for index in range(8):
+        if gn_list[index] != '':
+            e_cost.append(float(gn_list[index]) + heuristic_role_v(int(children[index])))
+        else:
+            print("\u0020||Start point out of bound")
+            e_cost.append(100000)
+    print("A* cost of edges:" + str(e_cost))
+    min_cost = min(e_cost)
+
+    if min_cost == e_cost[0]:
+        y0 = y0 - 1
+        g_cost_n_v.append(gn_list[0] + g_total)
+    elif min_cost == e_cost[1]:
+        x0 = x0 + 1
+        g_cost_n_v.append(gn_list[1] + g_total)
+    elif min_cost == e_cost[2]:
+        y0 = y0 + 1
+        g_cost_n_v.append(gn_list[2] + g_total)
+    elif min_cost == e_cost[3]:
+        x0 = x0 - 1
+        g_cost_n_v.append(gn_list[3] + g_total)
+    elif min_cost == e_cost[4]:
+        x0 = x0 - 1
+        y0 = y0 - 1
+        g_cost_n_v.append(gn_list[4] + g_total)
+    elif min_cost == e_cost[5]:
+        x0 = x0 + 1
+        y0 = y0 - 1
+        g_cost_n_v.append(gn_list[5] + g_total)
+    elif min_cost == e_cost[6]:
+        x0 = x0 - 1
+        y0 = y0 + 1
+        g_cost_n_v.append(gn_list[6] + g_total)
+    elif min_cost == e_cost[7]:
+        x0 = x0 + 1
+        y0 = y0 + 1
+        g_cost_n_v.append(gn_list[7] + g_total)
+
+    open_list_c.clear()
+    next_point = (y0 * (col + 1) + x0)
+    return next_point
+
 
 def A_star_c(s_point):
     print("The current point is " + chr(s_point + 65) + "(" + str(s_point) + ")")
@@ -407,6 +495,33 @@ def A_star_c(s_point):
                     print("The goal state reached")
                     flag = False
                     break
+                elif graph[place_index[x]] == "💊":
+                    print("The goal state reached")
+                    flag = False
+                    break
+
+                else:
+                    print("keep searching>>>>>>>>>>>>>")
+                    s_point = next_point
+                    break
+    print("<----Place found---->")
+    return
+
+def A_star_v(s_point):
+    print("The current point is " + chr(s_point + 65) + "(" + str(s_point) + ")")
+    flag = True
+    while flag:
+        next_point = move_node_v(s_point)
+        print("The next point is " + chr(next_point + 65) + "(" + str(next_point) + ")")
+        place_index = places_near_point(next_point)
+
+        for x in range(len(place_index)):
+            if 0 <= place_index[x] < col * row:
+                if graph[place_index[x]] == "💊":
+                    print("The goal state reached")
+                    flag = False
+                    break
+
                 else:
                     print("keep searching>>>>>>>>>>>>>")
                     s_point = next_point
@@ -449,12 +564,10 @@ start_p = get_starting_point()
 # end_p = ord(input("Please insert end point:")) - 65
 print("Your starting point is " + chr(start_p + 65) + "(index:" + str(start_p) + ") ")
 print("********************")
-# if role == 'c':
-#     A_star_c(start_p)
-# elif role == 'v':
-#     A_star_v(start_p)
-# elif role == 'p':
-#     A_star_p(start_p)
+if(role=='c'):
+    A_star_c(start_p)
+elif(role=='v'):
+    A_star_v(start_p)
 print("----end of program----")
 
 # graph part:
