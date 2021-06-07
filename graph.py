@@ -237,28 +237,47 @@ def get_node_index(point):
     return point_c_level(point), point_r_level(point)
 
 
+# find all desired end point of places for c
+def find_end_points_by_place(place_icon):
+    result = []
+    for index, e in enumerate(graph):
+        if e == place_icon:
+            result.append(points_near_place(index))
+    result = [item for sublist in result for item in sublist]
+    result = list(set(result))
+    return result
+
+
 # estimate cost from starting point to goal point
 # manhattan distance
-def heuristic_role_c(s_point, e_point):
+def heuristic_role_c(s_point):
     x0, y0 = get_node_index(s_point)
-    x1, y1 = get_node_index(e_point)
-    print("\u0020||Start point (" + str(x0) + ", " + str(y0) + "), " + "end point (" + str(x1) + ", " + str(y1) + ")")
-    d_x = round(float(abs(x1 - x0) * 0.2), 1)
-    d_y = round(float(abs(y1 - y0) * 0.1), 1)
-    return d_x + d_y
+    points = find_end_points_by_place("🦠")
+    H = []
+    for index, e in enumerate(points):
+        x1, y1 = get_node_index(e)
+        print("\u0020||Start point (" + str(x0) + ", " + str(y0) + "), " + "end point (" + str(x1) + ", " + str(y1) + ")")
+        d_x = round(float(abs(x1 - x0) * 0.2), 1)
+        d_y = round(float(abs(y1 - y0) * 0.1), 1)
+        H.append(d_x + d_y)
+    return min(H)
 
 
 # Diagonal Distance
 def heuristic_role_v(s_point, e_point):
     x0, y0 = get_node_index(s_point)
-    x1, y1 = get_node_index(e_point)
-    print("\u0020||Start point (" + str(x0) + ", " + str(y0) + "), " + "end point (" + str(x1) + ", " + str(y1) + ")")
-    d_x = abs(x1 - x0)
-    d_y = abs(y1 - y0)
-    d_min = min(d_x, d_y)
-    diagonal_distance = math.sqrt(0.2 ** 2 + 0.1 ** 2)
-    D = 0.2 if d_x < d_y else 0.1
-    return round(float((d_x * 0.2 + d_y * 0.1) + diagonal_distance * d_min - 2 * D * d_min), 2)
+    points = find_end_points_by_place("💊")
+    H = []
+    for index, e in enumerate(points):
+        x1, y1 = get_node_index(e)
+        print("\u0020||Start point (" + str(x0) + ", " + str(y0) + "), " + "end point (" + str(x1) + ", " + str(y1) + ")")
+        d_x = abs(x1 - x0)
+        d_y = abs(y1 - y0)
+        d_min = min(d_x, d_y)
+        diagonal_distance = math.sqrt(0.2 ** 2 + 0.1 ** 2)
+        D = 0.2 if d_x < d_y else 0.1
+        H.append(round(float((d_x * 0.2 + d_y * 0.1) + diagonal_distance * d_min - 2 * D * d_min), 2))
+    return min(H)
 
 
 # [up, right, down, left]
@@ -267,14 +286,13 @@ open_list_c = []
 close_list_c = []
 
 
-def move_node_c(curr_point, goal_point):
+def move_node_c(curr_point):
     # if goal point is reached, return current point
-    if curr_point == goal_point:
-        return curr_point
     x0, y0 = get_node_index(curr_point)
-    child = points_near_point_c(curr_point)
+    # indices of four points near curr_point
+    children = points_near_point_c(curr_point)
 
-    for ch in child:
+    for ch in children:
         if ch not in close_list_c:
             open_list_c.append(ch)
         elif ch in close_list_c:
@@ -303,7 +321,7 @@ def move_node_c(curr_point, goal_point):
     e_cost = []
     for index in range(4):
         if gn_list[index] != '':
-            e_cost.append(float(gn_list[index]) + heuristic_role_c(int(child[index]), goal_point))
+            e_cost.append(float(gn_list[index]) + heuristic_role_c(int(children[index])))
         else:
             print("\u0020||Start point out of bound")
             e_cost.append(100000)
@@ -328,11 +346,11 @@ def move_node_c(curr_point, goal_point):
     return next_point
 
 
-def A_star_c(s_point, e_point):
+def A_star_c(s_point):
     print("The current point is " + chr(s_point + 65) + "(" + str(s_point) + ")")
     flag = True
     while flag:
-        next_point = move_node_c(s_point, e_point)
+        next_point = move_node_c(s_point)
         print("The next point is " + chr(next_point + 65) + "(" + str(next_point) + ")")
         place_index = places_near_point(next_point)
 
@@ -344,8 +362,7 @@ def A_star_c(s_point, e_point):
                     break
                 else:
                     print("keep searching>>>>>>>>>>>>>")
-                    s_point = move_node_c(next_point, e_point)
-                    print("The next point is " + chr(s_point + 65) + "(" + str(s_point) + ")")
+                    s_point = next_point
                     break
     print("<----Place found---->")
     return
@@ -371,12 +388,10 @@ print("The cost of crossing edges around point " + keyIn + " are " + str(near_po
 
 
 start_p = get_starting_point()
-end_p = ord(input("Please insert end point:")) - 65
-print("Your starting point is " + chr(start_p + 65) + "(index:" + str(start_p) + ") "
-                                                                                 "and your ending point is " + chr(
-    end_p + 65) + "(index:" + str(end_p) + ") ")
+# end_p = ord(input("Please insert end point:")) - 65
+print("Your starting point is " + chr(start_p + 65) + "(index:" + str(start_p) + ") ")
 print("********************")
-A_star_c(start_p, end_p)
+A_star_c(start_p)
 print("----end of program----")
 
 # graph part:
