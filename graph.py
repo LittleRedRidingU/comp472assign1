@@ -3,6 +3,8 @@
 # Written by Lingli Lin_40065176, Yaqi Kang_40061670, Zisen Ling_40020293
 # For COMP 472 Section AK-X, AI-X AL-X – Summer 2021
 # --------------------------------------------------------
+import sys
+
 import matplotlib.pyplot as plt
 import math
 import copy
@@ -35,9 +37,21 @@ if role == "c" or role == "v":
     start_place = int(
         input("Please enter the start place(an index of list staring from 1 to " + str(row * col) + "): ")) - 1
 elif role == "p":
-    start_place = int(
-        input("Please enter the start place(an index of list staring from 1 to " + str(row * col) + "): ")) - 1
-    
+    start_format = str(input("Do you want to go to place, edge or point? "))
+    if start_format == "place":
+        role_p_detailed = "p-place"
+        start_place = int(
+            input("Please enter the start place(an index of list staring from 1 to " + str(row * col) + "): ")) - 1
+    elif start_format == "edge":
+        role_p_detailed = "p-edge"
+        start_point1 = int(ord(input("Please enter the first point of edge in format of alphabet ")) - 65)
+        start_point2 = int(ord(input("Please enter the second point of edge in format of alphabet ")) - 65)
+    elif start_format == "point":
+        role_p_detailed = "p-point"
+        start_point = int(ord(input("Please enter the point in format of alphabet ")) - 65)
+    else:
+        role_p_detailed = "undefined"
+
 
 def col_index(place):
     return place % col
@@ -55,18 +69,24 @@ def points_near_place(place):
 
 
 # decision making of the staring point:
-
-start_point_list = points_near_place(start_place)
-
-
 def get_starting_point():
     # c: 'right-top', v: 'left-bottom', p: 'should be any surrounding points? or surrounding edges only? confused!'
     if role == 'c':
+        start_point_list = points_near_place(start_place)
         return start_point_list[1]
-    if role == 'v':
+    elif role == 'v':
+        start_point_list = points_near_place(start_place)
         return start_point_list[2]
-    # if role == 'p':
-    #     return (start_point_list)
+    elif role == 'p':
+        if role_p_detailed == 'p-place':
+            return start_place
+        elif role_p_detailed == 'p-edge':
+            return [start_point1, start_point2]
+        elif role_p_detailed == 'p-point':
+            return start_point
+        else:
+            print("start format error: \"undefined\", system terminated")
+            sys.exit()
 
 
 # define a method to check places near a (index of the) place
@@ -90,7 +110,7 @@ def places_near_place(place):
 def cost(place):
     return {"c": {"🦠": 0, "💊": 2, "🎡": 3, "": 1},
             "v": {"🦠": 3, "💊": 0, "🎡": 1, "": 2, },
-            "p": {"🦠": 'inf', "💊": 2, "🎡": 0, "": 1},
+            "p": {"🦠": math.inf, "💊": 2, "🎡": 0, "": 1},
             }[role][place]
 
 
@@ -297,49 +317,31 @@ def heuristic_role_v(s_point):
 
 # modified manhattan distance
 # we use it because the distance other than the start place is the same as manhattan distance
-# if user pick a point pick manhattan, if pick an edge, use heuristic_role_p_edge
-def heuristic_role_p_place(s_place):
-    near_points = points_near_place(s_place)
-    H = []
-    for index in range(4):
-        x0, y0 = get_node_index(near_points[index])
-        points = find_end_points_by_place("🎡")
+def heuristic_role_p(s):
+    delta = 10000
+    if role_p_detailed == "p-point":
+        delta = 0
+    elif role_p_detailed == "p-place":
         # the distance from the center to the corner:
         # This value is just right for the furthest and the nearest distance moved within the grid
         delta = math.sqrt((0.2 / 2) ** 2 + (0.1 / 2) ** 2)
-        for e in points:
-            x1, y1 = get_node_index(e)
-            print(
-                "\u0020||Start point (" + str(x0) + ", " + str(y0) + "), " + "end point (" + str(x1) + ", " + str(
-                    y1) + ")")
-            d_x = round(float(abs(x1 - x0) * 0.2), 1)
-            d_y = round(float(abs(y1 - y0) * 0.1), 1)
-            if d_x + d_y == 0:
-                H.append(d_x + d_y)
-            else:
-                H.append(d_x + d_y + delta)
-    return min(H)
-
-
-def heuristic_role_p_edge(point1, point2):
-    near_points = [point1, point2]
+    elif role_p_detailed == "p-edge":
+        # the distance is the average of an edge cost and suppose role p always starting from midpoint of an edge
+        delta = (0.1 + 0.2) / 2 / 2
     H = []
-    for index in range(2):
-        x0, y0 = get_node_index(near_points[index])
-        points = find_end_points_by_place("🎡")
-        # the average distance from the center to the corner:
-        delta = (0.1 + 0.2) / 2
-        for e in points:
-            x1, y1 = get_node_index(e)
-            print(
-                "\u0020||Start point (" + str(x0) + ", " + str(y0) + "), " + "end point (" + str(x1) + ", " + str(
+    x0, y0 = get_node_index(s)
+    points = find_end_points_by_place("🎡")
+    for e in points:
+        x1, y1 = get_node_index(e)
+        print(
+            "\u0020||Start point (" + str(x0) + ", " + str(y0) + "), " + "end point (" + str(x1) + ", " + str(
                     y1) + ")")
-            d_x = round(float(abs(x1 - x0) * 0.2), 1)
-            d_y = round(float(abs(y1 - y0) * 0.1), 1)
-            if d_x + d_y == 0:
-                H.append(d_x + d_y)
-            else:
-                H.append(d_x + d_y + delta)
+        d_x = round(float(abs(x1 - x0) * 0.2), 1)
+        d_y = round(float(abs(y1 - y0) * 0.1), 1)
+        if d_x + d_y == 0:
+            H.append(d_x + d_y)
+        else:
+            H.append(d_x + d_y + delta)
     return min(H)
 
 
@@ -393,8 +395,8 @@ def A_star_c(s_point):
                             if graph[place_np[x]] == "🦠":
                                 print("Position has found with lowest cost, here is the route:", end=" ")
                                 for ind in opened_list[lowest_index][0]:
-                                    print(chr(ind+65), end="-")
-                                print(chr(65+ch))
+                                    print(chr(ind + 65), end="-")
+                                print(chr(65 + ch))
                                 return "found"
                     # push required value into opened_list
                     this_opened = copy.deepcopy(opened_list[lowest_index])
@@ -447,7 +449,7 @@ def A_star_v(s_point):
         # [left-top, right-top, left-bottom, right-bottom]
         gn_list_diagonal = diagonal_line(curr_point)
         # [left - top, top, right - top, left, right, left - bottom, bottom, right - bottom]
-        gn_list = [gn_list_diagonal[0], gn_list_cross[0], gn_list_diagonal[1], gn_list_cross[3],                      gn_list_cross[1],
+        gn_list = [gn_list_diagonal[0], gn_list_cross[0], gn_list_diagonal[1], gn_list_cross[3], gn_list_cross[1],
                    gn_list_diagonal[2], gn_list_cross[2], gn_list_diagonal[3]]
         for index, ch in enumerate(children):
             # left-top, right-top, left-bottom, right-bottom
@@ -461,8 +463,8 @@ def A_star_v(s_point):
                             if graph[place_np[x]] == "💊":
                                 print("Position has found with lowest cost, here is the route:", end=" ")
                                 for ind in opened_list[lowest_index][0]:
-                                    print(chr(ind+65), end="-")
-                                print(chr(65+ch))
+                                    print(chr(ind + 65), end="-")
+                                print(chr(65 + ch))
                                 return "found"
                     # push required value into opened_list
                     this_opened = copy.deepcopy(opened_list[lowest_index])
@@ -481,6 +483,99 @@ def A_star_v(s_point):
         del opened_list[lowest_index]
         loop_timer += 1
     print("no such place found, program terminated")
+
+
+def starter_p(s):
+    place_n_point = ""
+    points_n_place = []
+    if role_p_detailed == "p-point":
+        points_n_place = [s]
+        place_n_point = places_near_point_advanced(s)
+    elif role_p_detailed == "p-place":
+        points_n_place = points_near_place(s)
+        place_n_point = [places_near_point_advanced(points_n_place[0]), places_near_point_advanced(points_n_place[1]),
+                         places_near_point_advanced(points_n_place[2]), places_near_point_advanced(points_n_place[3])]
+        place_n_point = [num for elem in place_n_point for num in elem]
+    elif role_p_detailed == "p-edge":
+        points_n_place = s
+        place_n_point = [places_near_point_advanced(s[0]), places_near_point_advanced(s[1])]
+        place_n_point = [num for elem in place_n_point for num in elem]
+    for x in range(len(place_n_point)):
+        if place_n_point[x] != "" and 0 <= place_n_point[x] < col * row:
+            if graph[place_n_point[x]] == "🎡":
+                return "found"
+    lowest_index = 0
+    best_p_list = []
+    for s in points_n_place:
+        best_p_list.append(A_star_p(s))
+    for index, item in enumerate(best_p_list):
+        if item[2] <= best_p_list[lowest_index][2]:
+            lowest_index = index
+    print("Position has found with lowest cost, here is the route:", end=" ")
+    for ind in best_p_list[lowest_index][0]:
+        print(chr(ind + 65), end="-")
+    print("")
+
+
+def A_star_p(s):
+    # opened_list[opened=[closed_list=[], g_cost_update=[], record_cost]]
+    # step 1 (initialization)
+    opened_list = [[[s], [0], heuristic_role_p(s)]]
+    loop_timer = 0
+    lowest_index = 0
+    while loop_timer < 1000:
+        # step 2 (finding the opened has lowest record_cost)
+        for index, item in enumerate(opened_list):
+            if item[2] <= opened_list[lowest_index][2]:
+                lowest_index = index
+        print("Switching opened for which has the lowest record_cost " + str(opened_list[lowest_index][2]))
+        # step 3 (evaluate points, push into the opened_list)
+        closed_list = opened_list[lowest_index][0]
+        curr_point = opened_list[lowest_index][0][-1]
+        # [left-top, top, right-top, left, right, left-bottom, bottom, right-bottom]
+        points_np = points_near_point(curr_point)
+        # top, right, down, left
+        children = [points_np[1], points_np[4], points_np[6], points_np[3]]
+        # top, right, down, left
+        gn_list = near_point_edges(curr_point)
+        for index, ch in enumerate(children):
+            # left-top, right-top, left-bottom, right-bottom
+            if ch not in closed_list:
+                if ch != '':
+                    place_np = places_near_point_advanced(ch)
+                    # before pushing any value, check if this point has reached destination
+                    for x in range(len(place_np)):
+                        if place_np[x] != "" and 0 <= place_np[x] < col * row:
+                            # TODO 2
+                            if graph[place_np[x]] == "🎡":
+                                this_opened = copy.deepcopy(opened_list[lowest_index])
+                                if gn_list[index] != '':
+                                    this_opened[1].append(float(gn_list[index]))
+                                    result_cost = sum(this_opened[1]) + float(gn_list[index]) + heuristic_role_c(ch)
+                                else:
+                                    this_opened[1].append(10000)
+                                    result_cost = 10000
+                                this_opened[0].append(ch)
+                                this_opened[2] = result_cost
+                                return this_opened
+                    # push required value into opened_list
+                    this_opened = copy.deepcopy(opened_list[lowest_index])
+                    if gn_list[index] != '':
+                        this_opened[1].append(float(gn_list[index]))
+                        result_cost = sum(this_opened[1]) + float(gn_list[index]) + heuristic_role_c(ch)
+                    else:
+                        this_opened[1].append(10000)
+                        result_cost = 10000
+                    this_opened[0].append(ch)
+                    this_opened[2] = result_cost
+                    print(this_opened)
+                    opened_list.append(this_opened.copy())
+        # delete the opened that triggered this run
+        del opened_list[lowest_index]
+        loop_timer += 1
+    print("no such place found")
+    return [[[-1], [0], 100000]]
+
 
 #     # return a list of cost when point p inside of grid place
 # def cost_role_p_inside(place):
@@ -514,12 +609,22 @@ def A_star_v(s_point):
 
 start_p = get_starting_point()
 # end_p = ord(input("Please insert end point:")) - 65
-print("Your starting point is " + chr(start_p + 65) + "(index:" + str(start_p) + ") ")
+if role == 'p':
+    if role_p_detailed == 'p-place':
+        print("Your starting place is " + str(start_p+1))
+    elif role_p_detailed == 'p-edge':
+        print("Your starting edge is " + chr(start_p[0] + 65) + "-" + chr(start_p[1] + 65))
+    elif role_p_detailed == 'p-point':
+        print("Your starting point is " + chr(start_p + 65) + "(index:" + str(start_p) + ") ")
+elif role == 'c' or 'v':
+    print("Your starting point is " + chr(start_p + 65) + "(index:" + str(start_p) + ") ")
 print("********************")
 if role == 'c':
     A_star_c(start_p)
 elif role == 'v':
     A_star_v(start_p)
+elif role == 'p':
+    starter_p(start_p)
 print("----end of program----")
 
 # graph part:
