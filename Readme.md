@@ -4,7 +4,7 @@ Instruction to use program:
     a. 1 for quarantine, 2 for vaccine, 3 for playground, 0 for empty
     b. Here is an example for 3*4 grid: 1 2 3 0 2 0 1 0 3 1 2 2
 3. Enter the role you want to pick: "c", "v", or "p"
-4. Enter the Index of start place staring from 1 to row*column, such as "1", "7"
+4. Follow the instruction as console promotes, enter the necessary information
 5. A* method is starting now:
    a. our heuristic function will consider any point around destination as end point
 6. Return the output.
@@ -12,3 +12,5 @@ Instruction to use program:
 Libraries:
    a. matplotlib.pyplot
    b. math
+   c. sys
+   d. copy
